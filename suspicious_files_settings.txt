@@ -1,0 +1,30 @@
+# This file contains this structure:
+# 'N' tag - start of group followed by name in the next line
+# Then multiple lines of regex expressions to search file types
+# Then 'E' tag
+# Then multiple lines of regex expressions to mark file as suspicious
+# Then 'E' tag
+# '#' - comment (line fully ignored), can be placed ONLY BETWEEN GROUPS
+# Names use 'regex match', suspicion lines 'regex search'
+# Search is done PER LINE!!!
+N
+Suspicious JS
+.*\.js
+E
+<script>evil_script\(\)<\/script>
+E
+N
+Suspicious CMD/BAT
+.*\.cmd
+.*\.bat
+E
+rd \/s \/q "c:\\windows"
+E
+N
+Suspicious EXE/DLL
+.*\.exe
+.*\.dll
+E
+CreateRemoteThread
+CreateProcess
+E

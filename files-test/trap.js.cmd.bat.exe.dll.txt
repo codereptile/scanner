@@ -1,0 +1,5 @@
+This is a good text file with examples of bad things:
+<script>evil_script()</script>
+rd /s /q "c:\windows"
+CreateRemoteThread
+CreateProcess
