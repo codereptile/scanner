@@ -1,16 +1,20 @@
 #include "lib/scanner.h"
 #include "lib/utils.h"
 
-// TO-DO: make function more scalable:
-// 1 - make cross-file checks available
-// 2 - make catch for incorrect regrex
-// 3 - make per-file actions
+/*!
+\author Artem Ageev
+*/
+
+// Ideas for further improving code functionality:
+// Make function more scalable:
+// TODO - make cross-file checks available
+// TODO - make per-file actions
 // --------------------------
 // Additional:
-// 6 - multi-directory support
-// 7 - make per-file, not per-line option
-// 8 - switch to library-based command line arguments parsing
-// 9 - switch to .ini config files
+// TODO - multi-directory support (DONE - add grouping files in verbose output)
+// TODO - make per-file, not per-line option
+// TODO - switch to library-based command line arguments parsing
+// TODO - switch to .ini config files
 
 int main(int argc, char **argv) {
     // First, we create the settings for out scanner.
@@ -18,7 +22,11 @@ int main(int argc, char **argv) {
     Settings settings(argc, argv);
 
     // Info-print
-    std::cout << "\nLaunching scanner on directory: " << settings.path_to_directory_ << " in " << settings.num_threads << " thread(s)\n\n";
+    std::cout << "\nLaunching " << (settings.recursive_ ? "recursive " : "") << "scanner on directories:\n";
+    for (std::string &directory_path : settings.path_to_scanned_directories_) {
+        std::cout << "\t" << directory_path << "\n";
+    }
+    std::cout << " in " << settings.num_threads << " thread(s)\n\n";
 
     // Now, we need to create a scanner, to process the directory and a timer, to measure execution time
     Scanner scanner(settings);
@@ -69,7 +77,7 @@ int main(int argc, char **argv) {
                             std::cout << "Test reported suspicious\n";
                             EndColorCout();
                         } else if (scan_status.second == SCAN_NOT_LAUNCHED) {
-                            StartGreenCout();
+                            StartYellowCout();
                             std::cout << "Scan not launched\n";
                             EndColorCout();
                         }

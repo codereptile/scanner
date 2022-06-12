@@ -12,6 +12,7 @@
 void StartRedCout();
 void StartGreenCout();
 void StartBlueCout();
+void StartYellowCout();
 
 void EndColorCout();
 

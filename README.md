@@ -1,10 +1,12 @@
 # Scanner (задание для Kaspersky)
 
-Данный проект позволяет сканировать директорию на наличие "подозрительных" файлов.
+Данный проект позволяет сканировать директории на наличие "подозрительных" файлов.
 
 Типы файлов и подозрительные строки для проверки на этих типах файлов заадются в файле `suspicious_files_settings.txt`.
 
-Поиск идёт нерекурсиво, для проверки используются стандартные регулярные выражения С++.
+Для проверки используются стандартные регулярные выражения С++.
+В задании было указано проверять одну папку нерекурсивно,
+однако я добавил возможность проверять несколько папок и делать рекурсивный проход.
 
 ### Сборка проекта:
 
@@ -31,7 +33,7 @@ cmake --build ./
 Памятка при использовании:
 
 ```text
-Usage: ./scanner [OPTIONS] [DIRECTORY]
+Usage: ./scanner [OPTIONS] [DIRECTORIES TO SCAN]
 
 Searches for 'suspicious' files by rules, specified in suspicious_files_settings.txt
 Search is done using regex. Search is not recursive.
@@ -41,6 +43,7 @@ Available options:
    -v, --verbose    - print per-suspicion-group status for every file
    -j [NUM THREADS] - set the number of threads to run in, by default it's the number of supported threads
    -s [SETTINGS]    - change suspicious files setting file. By default - suspicious_files_settings.txt
+   -r               - go mad - go recursive
 ```
 
 ### Производительность:

@@ -36,12 +36,13 @@ public:
 // and is capable of obtaining these from command line arguments and settings file
 class Settings {
 public:
-    std::string path_to_directory_;
+    std::vector<std::string> path_to_scanned_directories_;
     std::string suspicious_files_settings_path_;
     bool per_file_short_info_;
     bool per_file_long_info_;
     std::vector<std::shared_ptr<SuspicionTest>> suspicion_tests_;
     unsigned int num_threads;
+    bool recursive_;
 
     Settings(int argc, char **argv);
 };

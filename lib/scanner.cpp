@@ -21,7 +21,7 @@ SuspicionTest::SuspicionTest(std::ifstream& suspicious_files_settings_stream) {
         }
         try {
             file_types_regexes_.push_back(std::regex(line, std::regex::icase));
-        } catch (std::exception &e) {
+        } catch (std::exception& e) {
             StartRedCout();
             std::cout << "!!!!! Fatal error\n";
             std::cout << "\tCould not create regex from: " << line << "\n";
@@ -39,7 +39,7 @@ SuspicionTest::SuspicionTest(std::ifstream& suspicious_files_settings_stream) {
         }
         try {
             suspicion_regexes_.push_back(std::regex(line, std::regex::icase));
-        } catch (std::exception &e) {
+        } catch (std::exception& e) {
             StartRedCout();
             std::cout << "!!!!! Fatal error\n";
             std::cout << "\tCould not create regex from: " << line << "\n";
@@ -81,6 +81,7 @@ Settings::Settings(int argc, char** argv) {
     per_file_short_info_ = false;
     per_file_long_info_ = false;
     suspicious_files_settings_path_ = "suspicious_files_settings.txt";
+    recursive_ = false;
     // --------------------------
 
     // Read command-line arguments
@@ -136,6 +137,8 @@ Settings::Settings(int argc, char** argv) {
                 } else {
                     suspicious_files_settings_path_ = argv[i];
                 }
+            } else if (argument == "-r") {
+                recursive_ = true;
             } else {
                 StartRedCout();
                 std::cout << "!!!!! Fatal error\n";
@@ -147,20 +150,8 @@ Settings::Settings(int argc, char** argv) {
                 EndColorCout();
                 exit(1);
             }
-        } else {                  // directory name
-            if (path_to_directory_.empty()) {  // if the directory wasn't specified yet, fill it
-                path_to_directory_ = argument;
-            } else {  // if the directory was already given, abort
-                StartRedCout();
-                std::cout << "!!!!! Fatal error\n";
-                std::cout << "Directory name given twice\n";
-                EndColorCout();
-                PrintHelpBlock();
-                StartRedCout();
-                std::cout << "Abort\n";
-                EndColorCout();
-                exit(1);
-            }
+        } else {  // directory name
+            path_to_scanned_directories_.push_back(argument);
         }
     }
     // --------------------------
@@ -170,9 +161,9 @@ Settings::Settings(int argc, char** argv) {
         std::cout << "\n";
         exit(0);
     }
-    if (path_to_directory_.empty()) {
+    if (path_to_scanned_directories_.empty()) {
         StartRedCout();
-        std::cout << "Error: no directory given\n";
+        std::cout << "Error: no directories to scan given\n";
         EndColorCout();
         PrintHelpBlock();
         StartRedCout();
@@ -264,25 +255,62 @@ void ScanFile(const Settings& settings, ScanResult& scan_result) {
 }
 
 Scanner::Scanner(const Settings& settings) {
-    std::filesystem::directory_iterator directory_iterator;
-    try {
-        directory_iterator = std::filesystem::directory_iterator(settings.path_to_directory_);
-    } catch (std::exception &e) {
-        StartRedCout();
-        std::cout << "!!!!! Fatal error\n";
-        std::cout << "\tScanner could not open the directory\n";
-        std::cout << "\tError message:\n\t" << e.what() << "\n";
-        std::cout << "Abort\n";
-        EndColorCout();
-
-        exit(1);
-    }
-    for (const auto& file_entry : directory_iterator) {
-        scan_results_.emplace_back(file_entry.path());
-        for (std::shared_ptr<SuspicionTest> test : settings.suspicion_tests_) {
-            scan_results_.back().scan_statuses_[test.get()] = SCAN_NOT_LAUNCHED;
+    std::cout << "Staring folder mapping\n";
+    for (const std::string& directory_path : settings.path_to_scanned_directories_) {
+        try {
+            if (settings.recursive_) {
+                std::filesystem::recursive_directory_iterator directory(directory_path);
+                try {
+                    for (const auto& file_entry : directory) {
+                        if (file_entry.is_directory()) {
+                            continue;
+                        }
+                        scan_results_.emplace_back(file_entry.path());
+                        for (std::shared_ptr<SuspicionTest> test : settings.suspicion_tests_) {
+                            scan_results_.back().scan_statuses_[test.get()] = SCAN_NOT_LAUNCHED;
+                        }
+                    }
+                } catch (std::exception& e) {
+                    StartYellowCout();
+                    std::cout << "!!!!! Warning\n";
+                    std::cout << "\tScanner could not open the directory: " << directory->path()
+                              << "\n";
+                    std::cout << "\tError message:\n\t" << e.what() << "\n";
+                    std::cout << "Abort\n";
+                    EndColorCout();
+                }
+            } else {
+                std::filesystem::directory_iterator directory(directory_path);
+                try {
+                    for (const auto& file_entry : directory) {
+                        if (file_entry.is_directory()) {
+                            continue;
+                        }
+                        scan_results_.emplace_back(file_entry.path());
+                        for (std::shared_ptr<SuspicionTest> test : settings.suspicion_tests_) {
+                            scan_results_.back().scan_statuses_[test.get()] = SCAN_NOT_LAUNCHED;
+                        }
+                    }
+                } catch (std::exception& e) {
+                    StartYellowCout();
+                    std::cout << "!!!!! Warning\n";
+                    std::cout << "\tScanner could not open the directory: " << directory->path()
+                              << "\n";
+                    std::cout << "\tError message:\n\t" << e.what() << "\n";
+                    std::cout << "Abort\n";
+                    EndColorCout();
+                }
+            }
+        } catch (std::exception& e) {
+            StartYellowCout();
+            std::cout << "!!!!! Warning\n";
+            std::cout << "\tScanner could not open the directory: " << directory_path << "\n";
+            std::cout << "\tError message:\n\t" << e.what() << "\n";
+            std::cout << "Abort\n";
+            EndColorCout();
         }
     }
+    std::cout << "Finished folder mapping\n\n";
 }
 
 void Scanner::LaunchScan(const Settings& settings) {

@@ -13,11 +13,14 @@ void StartGreenCout() {
 void StartBlueCout() {
     std::cout << "\033[35m";  // for linux green text
 }
+void StartYellowCout() {
+    std::cout << "\033[33m";  // for linux yellow text
+}
 void EndColorCout() {
     std::cout << "\033[0m";
 }
 void PrintHelp() {
-    std::cout << "Usage: ./scanner [OPTIONS] [DIRECTORY]\n\n";
+    std::cout << "Usage: ./scanner [OPTIONS] [DIRECTORIES TO SCAN]\n\n";
     std::cout
         << "Searches for 'suspicious' files by rules, specified in suspicious_files_settings.txt\n";
     std::cout << "Search is done using regex. Search is not recursive.\n";
@@ -31,6 +34,7 @@ void PrintHelp() {
                  "number of supported threads\n";
     std::cout << "   -s [SETTINGS]    - change suspicious files setting file. By default - "
                  "suspicious_files_settings.txt\n";
+    std::cout << "   -r               - go mad - go recursive\n";
 }
 void PrintHelpBlock() {
     std::cout << "\n----------------------------------------------------------\n";
